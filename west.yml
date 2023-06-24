@@ -1,0 +1,26 @@
+# Copyright (c) The ThingSet Project Contributors
+# SPDX-License-Identifier: Apache-2.0
+
+manifest:
+  remotes:
+    - name: zephyrproject
+      url-base: https://github.com/zephyrproject-rtos
+    - name: thingset
+      url-base: https://github.com/ThingSet
+  projects:
+    - name: zephyr
+      remote: zephyrproject
+      revision: v3.4-branch
+      import:
+        name-allowlist:
+          - cmsis
+          - edtt
+          - hal_nordic
+          - picolibc
+          - tinycrypt
+          - segger
+    - name: thingset-zephyr-sdk
+      remote: thingset
+      revision: 1a3c255a15cb8aa45292a3db2b3895f1461ba515
+      path: modules/thingset-zephyr-sdk
+      import: true
