@@ -8,7 +8,18 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/sensor.h>
 
+#include <thingset.h>
+#include <thingset/sdk.h>
+
 #include <stdio.h>
+
+#define APP_ID_SENSOR          0x05
+#define APP_ID_SENSOR_TEMP     0x50
+#define APP_ID_SENSOR_HUMIDITY 0x51
+
+#define APP_ID_CONTROL             0x06
+#define APP_ID_CONTROL_HEATER_ON   0x60
+#define APP_ID_CONTROL_TARGET_TEMP 0x61
 
 static float room_temp;
 static float humidity;
@@ -17,6 +28,22 @@ static bool heater_on;
 
 static const struct device *sensor = DEVICE_DT_GET_ONE(bosch_bme680);
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
+
+THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_SENSOR, "Sensor", THINGSET_NO_CALLBACK);
+
+THINGSET_ADD_ITEM_FLOAT(APP_ID_SENSOR, APP_ID_SENSOR_TEMP, "rRoomTemp_degC", &room_temp, 1,
+                        THINGSET_ANY_R, TS_SUBSET_LIVE);
+
+THINGSET_ADD_ITEM_FLOAT(APP_ID_SENSOR, APP_ID_SENSOR_HUMIDITY, "rHumidity_pct", &humidity, 1,
+                        THINGSET_ANY_R, TS_SUBSET_LIVE);
+
+THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_CONTROL, "Control", THINGSET_NO_CALLBACK);
+
+THINGSET_ADD_ITEM_BOOL(APP_ID_CONTROL, APP_ID_CONTROL_HEATER_ON, "rHeaterOn", &heater_on,
+                       THINGSET_ANY_R, TS_SUBSET_LIVE);
+
+THINGSET_ADD_ITEM_FLOAT(APP_ID_CONTROL, APP_ID_CONTROL_TARGET_TEMP, "sTargetTemp_degC",
+                        &target_temp, 1, THINGSET_ANY_RW, 0);
 
 static void run_controller()
 {
@@ -51,8 +78,6 @@ int main(void)
         humidity = sensor_value_to_float(&sval);
 
         run_controller();
-
-        printf("room_temp: %f, humidity: %f, heater_on: %d\n", room_temp, humidity, heater_on);
 
         k_sleep(K_MSEC(5000));
     }
