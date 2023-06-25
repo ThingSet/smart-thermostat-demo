@@ -7,6 +7,8 @@
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/sensor.h>
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
 
 #include <thingset.h>
 #include <thingset/sdk.h>
@@ -29,6 +31,8 @@ static bool heater_on;
 static const struct device *sensor = DEVICE_DT_GET_ONE(bosch_bme680);
 static const struct gpio_dt_spec led = GPIO_DT_SPEC_GET(DT_ALIAS(led0), gpios);
 
+static void control_change_callback(enum thingset_callback_reason reason);
+
 THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_SENSOR, "Sensor", THINGSET_NO_CALLBACK);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_SENSOR, APP_ID_SENSOR_TEMP, "rRoomTemp_degC", &room_temp, 1,
@@ -37,7 +41,7 @@ THINGSET_ADD_ITEM_FLOAT(APP_ID_SENSOR, APP_ID_SENSOR_TEMP, "rRoomTemp_degC", &ro
 THINGSET_ADD_ITEM_FLOAT(APP_ID_SENSOR, APP_ID_SENSOR_HUMIDITY, "rHumidity_pct", &humidity, 1,
                         THINGSET_ANY_R, TS_SUBSET_LIVE);
 
-THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_CONTROL, "Control", THINGSET_NO_CALLBACK);
+THINGSET_ADD_GROUP(TS_ID_ROOT, APP_ID_CONTROL, "Control", control_change_callback);
 
 THINGSET_ADD_ITEM_BOOL(APP_ID_CONTROL, APP_ID_CONTROL_HEATER_ON, "rHeaterOn", &heater_on,
                        THINGSET_ANY_R, TS_SUBSET_LIVE);
@@ -54,6 +58,13 @@ static void run_controller()
     else {
         heater_on = false;
         gpio_pin_set_dt(&led, 0);
+    }
+}
+
+static void control_change_callback(enum thingset_callback_reason reason)
+{
+    if (reason == THINGSET_CALLBACK_POST_WRITE) {
+        run_controller();
     }
 }
 
