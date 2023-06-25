@@ -43,7 +43,7 @@ THINGSET_ADD_ITEM_BOOL(APP_ID_CONTROL, APP_ID_CONTROL_HEATER_ON, "rHeaterOn", &h
                        THINGSET_ANY_R, TS_SUBSET_LIVE);
 
 THINGSET_ADD_ITEM_FLOAT(APP_ID_CONTROL, APP_ID_CONTROL_TARGET_TEMP, "sTargetTemp_degC",
-                        &target_temp, 1, THINGSET_ANY_RW, 0);
+                        &target_temp, 1, THINGSET_ANY_RW, TS_SUBSET_NVM);
 
 static void run_controller()
 {
